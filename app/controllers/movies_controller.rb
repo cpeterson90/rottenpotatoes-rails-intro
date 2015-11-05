@@ -1,5 +1,7 @@
 class MoviesController < ApplicationController
-
+  helper_method :hilight
+  helper_method :chosen_rating?
+  
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
@@ -11,12 +13,12 @@ class MoviesController < ApplicationController
   end
 
   def index
-   @movies = Movie.order(params[:sort])
+    @movies = Movie.order(params[:sort])
+    @filtered_ratings = params[:ratings] || [] # if no params[:ratings] then assign empty array
+    @movies = @movies.where(rating: params[:ratings]) if params[:ratings].present?
   end
   
-
   
-
   def new
     # default: render 'new' template
   end
@@ -45,4 +47,18 @@ class MoviesController < ApplicationController
     redirect_to movies_path
   end
 
+  def hilight(column)
+    if(session[:order].to_s == column)
+      return 'hilite'
+    else
+      return nil
+    end
+  end
+
+  def chosen_rating?(rating)
+    chosen_ratings = session[:ratings]
+      return true if chosen_ratings.nil?
+    chosen_ratings.include? rating
+  end
+  
 end
