@@ -13,9 +13,33 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.order(params[:sort])
-    @filtered_ratings = params[:ratings] || [] # if no params[:ratings] then assign empty array
-    @movies = @movies.where(rating: params[:ratings]) if params[:ratings].present?
+        @all_ratings = ['G','PG','PG-13','R']
+        if params[:ratings] != nil
+          session[:ratings] = params[:ratings]
+        end
+        if params[:order] != nil
+          session[:order] = params[:order]
+        end
+
+    if (params[:ratings].nil? && !session[:ratings].nil?) || 
+        (params[:order].nil? && !session[:order].nil?)
+        
+      redirect_to movies_path("ratings" => session[:ratings], "order" => session[:order])
+      
+    elsif !params[:ratings].nil? || !params[:order].nil?
+      if !params[:ratings].nil?
+        array_ratings = params[:ratings].keys
+        return @movies = Movie.where(rating: array_ratings).order(session[:order])
+      else
+        return @movies = Movie.all.order(session[:order])
+      end
+      
+    elsif !session[:ratings].nil? || !session[:order].nil?
+      redirect_to movies_path("ratings" => session[:ratings], "order" => session[:order])
+    else
+      return @movies = Movie.all
+    end
+
   end
   
   
